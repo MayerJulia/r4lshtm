@@ -48,6 +48,9 @@ options(digits = 2, scipen = 9)
 ## 1. Change the default directory
 
 If you use an .Rmd notebook like this one, you don't need to change directory â€“ R assumes the default directory is the directory where the .Rmd is kept. So, you need to put your datasets in the same folder as this notebook. We recommend using R Projects to keep all your datafiles in one place (and for easy Github integration). Chapter 8 of R 4 Data Science gives an overview of how to use R Projects: https://r4ds.had.co.nz/workflow-projects.html
+```{r}
+getwd()
+```
 
 
 ## 2. Import and explore a .dta dataset
@@ -55,7 +58,7 @@ If you use an .Rmd notebook like this one, you don't need to change directory â€
 The function `read_dta()` is from package {haven}. Note that for these R practicals, there are slightly different versions of the dataset required to appropriately red in categorical variables. Please ensure you are using the versions of the dataset with the '17' affix.
 
 ```{r}
-mwanza <- read_dta("mwanza17.dta") %>% as_factor()
+mwanza <- read_dta("C:/Users/julia/Documents/LSHTM/Term 3/ASME/Data/mwanza.dta") %>% as_factor()
 ```
 
 Unfortunately, Stata help files cannot be accessed in R. Key points regarding this dataset:
