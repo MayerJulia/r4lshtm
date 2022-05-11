@@ -30,8 +30,8 @@ options(digits = 2, scipen = 9)
 
 ```{r}
 # Data import
-diabraz <- read_dta("diabraz17.dta") %>% sjlabelled::as_factor()
-diabraz2 <- read_dta("diabraz217.dta") %>% sjlabelled::as_factor()
+diabraz <- read_dta("C:/Users/julia/Documents/LSHTM/Term 3/ASME/Data/diabraz.dta") %>% sjlabelled::as_factor()
+diabraz2 <- read_dta("C:/Users/julia/Documents/LSHTM/Term 3/ASME/Data/diabraz2.dta") %>% sjlabelled::as_factor()
 
 # Preview
 diabraz
@@ -51,6 +51,40 @@ Some useful info from the Stata `.hlp` file:
 * milkgp     1=breast only, 2=breast+other, 3=other only
 
 You might want to label your variables with these value labels for clarity.
+```{r}
+diabraz%<>% mutate(case = as_factor(case_when(case == 1 ~ "case",
+                                              case == 0 ~ "control")))
+diabraz%<>%mutate(milkgp = as_factor(case_when (milkgp == 1 ~ "breast only",
+                                                milkgp == 2 ~ "breast+other",
+                                                milkgp == 3 ~ "other only")))
+diabraz%<>%mutate(bf = as_factor((case_when(bf == 1 ~ "breastfed",
+                                            bf == 2 ~ "not breastfed"))))
+diabraz%<>%mutate(water = as_factor(case_when (water == 1 ~ "in house",
+                                               water ==2 ~ "in plot",
+                                               water == 3 ~ "none")))
+diabraz%<>%mutate(wat2 = as_factor(case_when (wat2 == 1 ~"in house/plot",
+                                              wat2 == 2 ~ "none")))
+diabraz%<>%mutate(agegp = as_factor(case_when (agegp == 1 ~ "0-1",
+                                               agegp == 2 ~ "2-3",
+                                               agegp == 3 ~ "4-5",
+                                               agegp == 4 ~ "6-8",
+                                               agegp == 5 ~ "9-11")))
+diabraz%<>%mutate(agegp2 = as_factor (case_when(agegp == 1 ~ "0-2",
+                                                agegp == 2 ~ "3-5",
+                                                agegp == 3 ~ "6-11")))
+#or do
+
+diabraz%<>% mutate( case = factor(case,
+                                  levels = c(1,2),
+                                  labels = c("case, control")),
+                    milkgp = factor (milkgp,
+                                     levels = c(1, 2, 3),
+                                     labels = c("breast only", "breast+other", "other only")),
+                    bf = factor (bf,
+                                 levels = c(1, 2),
+                                 labels = c("breastfed", "not breastfed"))
+                    )
+```
 
 -------------------------------------------------------------------------------
 
@@ -61,7 +95,7 @@ You might want to label your variables with these value labels for clarity.
 We start off by cross-tabulating our outcome (case) and our exposure (bf), looking at row percentages.
 
 ```{r}
-diabraz %$% tabpct(case, bf, percent = "row", graph = F)
+diabraz%$% tabpct (bf, case, percent = "col", graph = F)
 ```
 
 Then we estimate the odds ratio, calculate a confidence interval for the OR, and test the null hypothesis of no association. This will give us a long list of strata (since each set is one stratum) and the MH adjusted OR as the last entry in the list.
@@ -90,15 +124,17 @@ clogit(case.n ~ bf + strata(set), data = diabraz) %>% clogistic.display()
 Now using the full dataset (diabraz2). Just to remind you, water has 3 levels (1=in house, 2=in plot, 3=none) and wat2 has 2 levels (1=in house/plot 2=none). So if you are using the variable water to fit your model and you only see 1 OR in the output something is wrong! This is because all of the data is coded as integers - make sure you've made the conversion using as_factor() where appropriate.
 
 ```{r, warning = F}
-diabraz2 <- diabraz2 %>% mutate(case.n = as.numeric(case)-1)
 
-model1 <- clogit(case.n ~ water + strata(set), data = diabraz2)
-clogistic.display(model1)
+clogit(case.n ~ bf + strata(set), data = diabraz) %>% clogistic.display()
+diabraz2 <- diabraz2 %>% mutate(case.n = as.numeric(case)-1)
+clogit(case.n ~ water + strata(set), data = diabraz) %>% clogistic.display()
+
 ```
 
 We could also answer this question comparing two different models using a likelihood ratio test. Fit a second model and compare them using the `lrtest()` function:
 
 ```{r, warning = F}
+model1 <- clogit(case.n ~ water +strata(set), data = diabraz2)
 model2 <- clogit(case.n ~ wat2 + strata(set), data = diabraz2)
 clogistic.display(model2)
 
@@ -122,10 +158,10 @@ clogistic.display(model3)
 Here we need might want to work with interaction terms if the effect of water differs by level of age group. We use `*` insted of `+` between two variables to allow for interaction. 
 
 ```{r, warning = F}
-model4 <- clogit(case.n ~ water + agegp2 + strata(set), data = diabraz2)
+model4 <- clogit(case.n ~ agegp2 + water + strata(set), data = diabraz2)
 clogistic.display(model4)
 
-model5 <- clogit(case.n ~ water * agegp2 + strata(set), data = diabraz2)
+model5 <- clogit(case.n ~ agegp2*water + strata(set), data = diabraz2)
 clogistic.display(model5)
 
 epiDisplay::lrtest(model4, model5)
@@ -144,7 +180,7 @@ Omitted here are descriptive analyses! Make sure you know about the data you are
 
 ```{r, warning = F}
 # crude
-clogit(case.n ~ milkgp + strata(set), data = diabraz2) %>% clogistic.display()
+clogit (case.n ~ milkgp + strata(set), data = diabraz2) %>% clogistic.display()
 
 # adjusted for sex
 clogit(case.n ~ milkgp + sex + strata(set), data = diabraz2) %>% clogistic.display()
