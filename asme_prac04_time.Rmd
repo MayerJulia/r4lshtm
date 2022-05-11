@@ -46,7 +46,7 @@ Import and explore `whitehal.dta`. These are the variables of interest:
 
 ```{r}
 # Import the dataset
-whitehall <- read_stata("whitehall17.dta") %>% as_factor()
+whitehall <- read_stata("C:/Users/julia/Documents/LSHTM/Term 3/ASME/Data/whitehal.dta") %>% as_factor()
 
 # Preview
 whitehall
@@ -112,7 +112,7 @@ You then calculate stratified rates with `pyears()`, where pyears stands for per
 
 ```{r}
 #--- Create survival object
-surv_wh <- whitehall %$% Surv(time = py, event = chd)
+surv_wh<- whitehall %$% Surv(time = py, event = chd)
 
 #--- Calculate rates
 pyears(surv_wh ~ grade, data = whitehall) %>% 
