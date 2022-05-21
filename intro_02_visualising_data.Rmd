@@ -29,7 +29,7 @@ We use a simple function to read in data: read_csv().
 
 ```{r}
 #--- Read in the data
-sdg <- read_csv("./sdg.csv")
+sdg <- read_csv("sdg.csv")
 
 #--- This will only work on my computer: run it and see what happens
 sdg <- read_csv("E:/LSHTM/Teaching/r4epi/sdg.csv")
